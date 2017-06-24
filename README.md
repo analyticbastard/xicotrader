@@ -1,0 +1,2 @@
+# xicotrader
+Automatically trade cryoptocurrency
