@@ -24,10 +24,6 @@
    :executor {}
    :kraken {}})
 
-(defn make-system [config]
-  (-> (make-system-component config)
-      (component/system-using (make-system-dependencies))))
-
 (defn start-system [system]
   (component/start system))
 

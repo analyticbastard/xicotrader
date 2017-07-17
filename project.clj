@@ -11,9 +11,18 @@
                  [cheshire "5.7.1"]
                  [im.chit/cronj "1.4.4"]
                  [clj-http "3.6.1"]]
+  :source-paths ["src/clj/common"]
+  :resource-paths ["resources/client" "resources/simulator"]
   :target-path "target/%s"
-  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
-                                  [org.clojure/tools.nrepl "0.2.12"]]
+  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10" :exclusions [org.clojure/clojure]]
+                                  [org.clojure/tools.nrepl "0.2.12" :exclusions [org.clojure/clojure]]]
                    :source-paths ["dev"]}
-
+             :client {:source-paths ["src/clj/client" "src/clj/common"]
+                      :resource-paths ["resources/client"]}
+             :simulator {:dependencies [[metosin/compojure-api "1.1.6" :exclusions [org.clojure/clojure]]
+                                        [juxt.modular/ring "0.5.3" :exclusions [org.clojure/clojure]]
+                                        [juxt.modular/http-kit "0.5.4" :exclusions [org.clojure/clojure]]
+                                        [ring/ring-json "0.4.0" :exclusions [org.clojure/clojure]]]
+                         :source-paths ["src/clj/simulator" "src/clj/common"]
+                         :resource-paths ["resources/simulator"]}
              :prod {:aot :all}})

@@ -1,6 +1,7 @@
 (ns xicotrader.config
   (:require
-    [clojure.java.io :as io])
+    [clojure.java.io :as io]
+    [xicotrader.util :refer [ignoring-exceptions]])
   (:import (java.util Properties)
            (java.io Reader)))
 
@@ -8,10 +9,11 @@
   [file-name]
   (let [props (Properties.)
         file-resource (io/resource file-name)]
-    (with-open [^Reader reader (io/reader file-resource)]
-      (.load props reader)
-      (into {} (for [[k v] props]
-                 [(keyword k) (read-string v)])))))
+    (ignoring-exceptions
+      (with-open [^Reader reader (io/reader file-resource)]
+        (.load props reader)
+        (into {} (for [[k v] props]
+                   [(keyword k) (read-string v)]))))))
 
 (defn config [profile module]
   (load-props (format "conf/%s/%s.properties" (name profile) (name module))))

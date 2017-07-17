@@ -8,4 +8,5 @@
 (defn -main
   [& args]
   (system/start-system
-    (system/make-system-component :prod)))
+    (system/make-system-component
+      (config/system-config :prod (keys (system/make-system-dependencies))))))

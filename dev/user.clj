@@ -1,6 +1,7 @@
 (ns user
   (:require
     [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+    [com.stuartsierra.component :as component]
     [xicotrader
      [config :as config]
      [system :as system]]))
@@ -21,11 +22,15 @@
   (config/system-config :dev
                         (keys (system/make-system-dependencies))))
 
+(defn make-system [config]
+  (-> (system/make-system-component config)
+      (component/system-using (system/make-system-dependencies))))
+
 (defn start
   ([] (start (dev-config)))
   ([config]
    (when-not-system
-     (let [s (system/make-system (merge (dev-config) config))]
+     (let [s (make-system (merge (dev-config) config))]
        (alter-var-root #'user/system (constantly s))
        (alter-var-root #'user/system system/start-system)
        (println "System started!")))))
