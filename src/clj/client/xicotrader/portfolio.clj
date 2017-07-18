@@ -1,3 +1,3 @@
 (ns xicotrader.portfolio)
 
-(defn update [portfolio portfolio-updates])
+(defn update-portfolio [portfolio portfolio-updates])

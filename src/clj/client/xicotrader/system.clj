@@ -6,23 +6,21 @@
      [events :as events]
      [executor :as executor]
      [kraken :as kraken]
+     [simulator-service :as simulator-service]
      [strategy :as strategy]]))
 
-(defn make-system-component [{:keys [engine events execution kraken strategy]}]
+(defn make-system-component [{:keys [engine events simulator kraken strategy]}]
   (component/system-map
-    :engine   (engine/new engine)
-    :events   (events/new events)
-    :executor (executor/new execution)
-    :kraken   (kraken/new kraken (:symbols events))
-    :strategy (strategy/new strategy)))
+    :engine    (engine/new engine)
+    :events    (events/new events)
+    :simulator (simulator-service/new simulator)
+    :strategy  (strategy/new strategy)))
 
 (defn make-system-dependencies []
   {:engine {:events :events
-            :executor :executor
             :strategy :strategy}
-   :events {:service :kraken}
-   :executor {}
-   :kraken {}})
+   :events {:service :simulator}
+   :simulator {}})
 
 (defn start-system [system]
   (component/start system))

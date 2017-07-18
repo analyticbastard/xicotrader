@@ -59,7 +59,8 @@
       (cronj/start! job)
       (assoc this :job job :ch ch)))
   (stop [this]
-    (cronj/stop! (:job this))
+    (let [job (:job this)]
+      (when job (cronj/stop! job)))
     this))
 
 (defn new [config symbols]
