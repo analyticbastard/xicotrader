@@ -2,6 +2,9 @@
   (:require
     [com.stuartsierra.component :as component]))
 
+(defn evaluate [portcolio event]
+  )
+
 (defrecord Component [config]
   component/Lifecycle
   (start [this]
