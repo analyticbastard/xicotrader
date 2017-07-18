@@ -13,7 +13,9 @@
     [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
     [schema.core :as s]
     [clojure.tools.logging :as log]
-    [xicotrader.public :as public]))
+    [xicotrader
+     [public :as public]
+     [private :as private :refer [with-validation]]]))
 
 (defmulti handler (fn [e] (type e)))
 
@@ -31,10 +33,17 @@
     :tags ["Public API"]
     (GET "/pairs" []
       :summary "Get consumer files"
-      (public/endpoint-pairs))))
+      (public/endpoint-pairs)))
+  (context "/api/private" []
+    :tags ["Private API"]
+    (GET "/portfolio" []
+      :summary "Get user's current portfolio"
+      :query-params [user-id :- s/Str
+                     secret-key :- s/Str]
+      (with-validation user-id secret-key
+        (private/endpoint-portfolio user-id)))))
 
-(defroutes app
-           xicotrader-api)
+(defroutes app xicotrader-api)
 
 (defn- reloadably-attach-things [h cmpnt req]
   (h (merge req cmpnt {:consumer-input-io (-> cmpnt :consumer :task :input-io)})))
