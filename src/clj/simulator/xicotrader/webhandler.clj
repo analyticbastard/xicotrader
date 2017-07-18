@@ -33,7 +33,11 @@
     :tags ["Public API"]
     (GET "/pairs" []
       :summary "Get consumer files"
-      (public/endpoint-pairs)))
+      (public/endpoint-pairs))
+    (GET "/tick" []
+      :summary "Get last tick for a trading pair"
+      :query-params [pair :- (apply s/enum (public/get-pairs))]
+      (public/endpoint-get-tick pair)))
   (context "/api/private" []
     :tags ["Private API"]
     (GET "/portfolio" []

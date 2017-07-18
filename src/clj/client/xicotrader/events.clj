@@ -4,20 +4,19 @@
     [com.stuartsierra.component :as component]
     [xicotrader.service :as service]))
 
-(defn- receive-loop [this]
-  (let [service-ch (get-in this [:service :ch])]
-    #_(go-loop []
-      ;; todo format raw events here
-      ;(>! ch (<! service-ch))
-      (recur)))
-  this)
+(defn- receive-loop [{:keys [service ch-in]} running?]
+  (let [service-in (:ch-in service)]
+    (go-loop []
+      (>! ch-in (<! service-in))
+      (when @running? (recur)))))
 
 (defprotocol Events
   (init [this]))
 
-(defrecord Component [config]
+(defrecord Component [config running?]
   Events
   (init [this]
+    (reset! running? true)
     (let [service (:service this)
           portfolio (service/init service)]
       portfolio))
@@ -25,12 +24,14 @@
   component/Lifecycle
   (start [this]
     (let [in-chan (a/chan)
-          out-chan (a/chan)]
-      (receive-loop (assoc this
-                      :in-chan in-chan
-                      :out-chan out-chan))))
+          out-chan (a/chan)
+          this (assoc this :ch-in  in-chan
+                           :ch-out out-chan)]
+      (receive-loop this running?)
+      this))
   (stop [this]
+    (reset! running? false)
     this))
 
 (defn new [config]
-  (Component. config))
+  (Component. config (atom false)))
