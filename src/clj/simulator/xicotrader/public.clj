@@ -1,8 +1,6 @@
 (ns xicotrader.public
   (require
-    [clj-time.core :as time]
-    [ring.util.http-response :as http-response]
-    [cheshire.core :as cheshire]))
+    [clj-time.core :as time]))
 
 (defn get-pairs []
   ["BTCEUR" "BTCETH" "ETHEUR"])
@@ -18,11 +16,3 @@
   (->> (get data pair)
        (filter #(time/after? (:time %) (time/now)))
        (take 1)))
-
-(defn endpoint-pairs []
-  (http-response/ok
-    (get-pairs)))
-
-(defn endpoint-get-tick [pair]
-  (http-response/ok
-    (cheshire/encode (get-tick pair))))

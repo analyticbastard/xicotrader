@@ -2,7 +2,7 @@
   (:require
     [clojure.string :as string]
     [clojure.java.io :as clj-io]
-    [cheshire.core :as core]
+    [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [ring.util.http-response :as http-response]
     [compojure.api.sweet :as compojure-api
@@ -12,15 +12,32 @@
     [modular.ring :refer [WebRequestHandler]]
     [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
     [schema.core :as s]
-    [clojure.tools.logging :as log]
+    [cheshire.core :as cheshire]
     [xicotrader
      [public :as public]
-     [private :as private :refer [with-validation]]]))
+     [private :as private]]))
+
+(defmacro with-validation [user-id secret-key & body]
+  `(if (= (~private/user-secrets ~user-id) ~secret-key)
+     (do ~@body)
+     (http-response/forbidden)))
 
 (defmulti handler (fn [e] (type e)))
 
 (defmethod handler Exception [e]
   (http-response/internal-server-error))
+
+(defn public-endpoint-pairs []
+  (http-response/ok
+    (public/get-pairs)))
+
+(defn public-endpoint-get-tick [pair]
+  (http-response/ok
+    (cheshire/encode (public/get-tick pair))))
+
+(defn private-endpoint-portfolio [user-id]
+  (http-response/ok
+    (private/get-portfolio user-id)))
 
 (compojure-api/defapi xicotrader-api
   {:swagger
@@ -33,11 +50,11 @@
     :tags ["Public API"]
     (GET "/pairs" []
       :summary "Get consumer files"
-      (public/endpoint-pairs))
+      (public-endpoint-pairs))
     (GET "/tick" []
       :summary "Get last tick for a trading pair"
       :query-params [pair :- (apply s/enum (public/get-pairs))]
-      (public/endpoint-get-tick pair)))
+      (public-endpoint-get-tick pair)))
   (context "/api/private" []
     :tags ["Private API"]
     (GET "/portfolio" []
@@ -45,7 +62,7 @@
       :query-params [user-id :- s/Str
                      secret-key :- s/Str]
       (with-validation user-id secret-key
-        (private/endpoint-portfolio user-id)))))
+        (private-endpoint-portfolio user-id)))))
 
 (defroutes app xicotrader-api)
 
