@@ -1,4 +1,4 @@
-(ns xicotrader.kraken
+(ns xicotrader.service.kraken
   (:require
     [clojure.core.async :as a :refer [go >!]]
     [clojure.edn :as edn]

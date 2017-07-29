@@ -1,4 +1,4 @@
-(ns xicotrader.simulator-service
+(ns xicotrader.service.simulator-service
   (:require
     [clojure.core.async :as a :refer [go-loop <! >!]]
     [com.stuartsierra.component :as component]
