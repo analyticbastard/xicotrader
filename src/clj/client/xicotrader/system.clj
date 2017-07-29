@@ -5,21 +5,25 @@
      [engine :as engine]
      [events :as events]
      [executor :as executor]
-     [kraken :as kraken]
-     [simulator-service :as simulator-service]
-     [strategy :as strategy]]))
+     [strategy :as strategy]]
+    [xicotrader.service
+     [simulator-service :as simulator-service]]
+    [xicotrader.strategy
+     [arbitrage :as arbitrage]]))
 
-(defn make-system-component [{:keys [engine events simulator kraken strategy]}]
+(defn make-system-component [{:keys [engine events simulator kraken strategy arbitrage]}]
   (component/system-map
     :engine    (engine/new engine)
     :events    (events/new events)
     :simulator (simulator-service/new simulator)
-    :strategy  (strategy/new strategy)))
+    :strategy  (strategy/new strategy)
+    :arbitrage (arbitrage/new arbitrage)))
 
 (defn make-system-dependencies []
-  {:engine {:events :events
-            :strategy :strategy}
-   :events {:service :simulator}
+  {:engine    {:events   :events
+               :strategy :strategy}
+   :strategy  {:strategy :arbitrage}
+   :events    {:service :simulator}
    :simulator {}})
 
 (defn start-system [system]

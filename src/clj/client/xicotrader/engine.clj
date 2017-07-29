@@ -9,11 +9,11 @@
      [strategy :as strategy]]))
 
 (defn- engine-loop [{events-in :ch-in events-out :ch-out}
-                    config initial-portfolio running?]
+                    strategy config initial-portfolio running?]
   (go-loop [portfolio initial-portfolio]
     (let [{:keys [portfolio-updates tick-data]} (<! events-in)
           new-portfolio (portfolio/update-portfolio portfolio portfolio-updates)
-          action (strategy/evaluate new-portfolio tick-data)]
+          action (strategy/evaluate strategy new-portfolio tick-data)]
       (log/info tick-data)
       (when action (>! events-out action))
       (recur new-portfolio))))
@@ -22,8 +22,9 @@
   component/Lifecycle
   (start [this]
     (let [events (:events this)
+          strategy (:strategy this)
           initial-portfolio (events/init events)]
-      (engine-loop events config initial-portfolio running?))
+      (engine-loop events strategy config initial-portfolio running?))
     this)
   (stop [this]
     this))
