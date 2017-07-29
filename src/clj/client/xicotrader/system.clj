@@ -4,7 +4,6 @@
     [xicotrader
      [engine :as engine]
      [events :as events]
-     [executor :as executor]
      [strategy :as strategy]]
     [xicotrader.service
      [simulator-service :as simulator-service]]
