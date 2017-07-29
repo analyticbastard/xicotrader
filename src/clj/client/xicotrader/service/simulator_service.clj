@@ -20,33 +20,32 @@
                            {:query-params {:pair pair}})]
     (cheshire/parse-string (:body response))))
 
-(defn poll-loop [{:keys [ch-in]} config running?]
+(defn poll-loop [{:keys [ch-in]} config]
   (go-loop []
-    (>! ch-in {:tick-data (get-tick config "ETHEUR")
-                :portfolio-updates {}})
-    (Thread/sleep 1000)
-    (when @running? (recur))))
+    (when-let [event (>! ch-in {:tick-data         (get-tick config "ETHEUR")
+                                :portfolio-updates {}})]
+      (Thread/sleep 1000)
+      (recur))))
 
-(defn order-loop [{:keys [ch-out]} config running?]
+(defn order-loop [{:keys [ch-out]} config]
   (go-loop []
-    (log/info "Will send" (<! ch-out))
-    (when @running? (recur))))
+    (let [action (<! ch-out)]
+      (log/info "Will send" action)
+      (recur))))
 
-(defrecord Component [config running?]
+(defrecord Component [config]
   component/Lifecycle
   (start [this]
     (assoc this :ch-in  (a/chan)
                 :ch-out (a/chan)))
   (stop [this]
-    (reset! running? false)
     this)
 
   service/Service
   (init [this]
-    (reset! running? true)
-    (poll-loop this config running?)
-    (order-loop this config running?)
+    (poll-loop this config)
+    (order-loop this config)
     (get-user-data config)))
 
 (defn new [config]
-  (Component. config (atom false)))
+  (Component. config))
