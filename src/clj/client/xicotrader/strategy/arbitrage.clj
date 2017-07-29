@@ -15,7 +15,7 @@
     this)
 
   strategy/Strategy
-  (compute [portfolio market tick-data]
+  (compute [strategy portfolio market tick-data]
     (do-arbitrage portfolio market tick-data)))
 
 (defn new [config]

@@ -1,11 +1,11 @@
 (ns xicotrader.service.simulator-service
   (:require
     [clojure.core.async :as a :refer [go-loop <! >!]]
+    [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [clj-http.client :as http]
     [cheshire.core :as cheshire]
-    [xicotrader.service :as service])
-  (:import (clojure.lang Atom)))
+    [xicotrader.service :as service]))
 
 (defn get-user-data [{:keys [host port private-url user-id secret-key]}]
   (let [url (format "http://%s:%s/%s/%s" host port private-url "portfolio")
@@ -20,12 +20,16 @@
                            {:query-params {:pair pair}})]
     (cheshire/parse-string (:body response))))
 
-(defn poll-loop [{:keys [ch-in]}
-                 config ^Atom running?]
+(defn poll-loop [{:keys [ch-in]} config running?]
   (go-loop []
     (>! ch-in {:tick-data (get-tick config "ETHEUR")
-               :portfolio-updates {}})
+                :portfolio-updates {}})
     (Thread/sleep 1000)
+    (when @running? (recur))))
+
+(defn order-loop [{:keys [ch-out]} config running?]
+  (go-loop []
+    (log/info "Will send" (<! ch-out))
     (when @running? (recur))))
 
 (defrecord Component [config running?]
@@ -41,6 +45,7 @@
   (init [this]
     (reset! running? true)
     (poll-loop this config running?)
+    (order-loop this config running?)
     (get-user-data config)))
 
 (defn new [config]

@@ -4,7 +4,7 @@
     [com.stuartsierra.component :as component]))
 
 (defprotocol Strategy
-  (compute [portfolio market tick-data]))
+  (compute [strategy portfolio market tick-data]))
 
 (defn evaluate [{:keys [ch-in ch-out]} portfolio tick-data]
   (>!! ch-in {:portfolio portfolio :tick-data tick-data})
@@ -15,7 +15,7 @@
     (when-let [data (<! ch-in)]
       (let [{:keys [portfolio tick-data]} data
             updated-market (apply merge market tick-data)]
-        (>! ch-out (.compute portfolio market tick-data))
+        (>! ch-out (.compute strategy portfolio market tick-data))
         (recur updated-market)))))
 
 (defrecord Component [config]

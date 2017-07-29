@@ -10,11 +10,11 @@
 
 (defn- engine-loop [{:keys [ch-in ch-out]} strategy config initial-portfolio running?]
   (go-loop [portfolio initial-portfolio]
-    (let [{:keys [portfolio-updates tick-data]} (<! ch-in)
-          new-portfolio (portfolio/update-portfolio portfolio portfolio-updates)
-          action (strategy/evaluate strategy new-portfolio tick-data)]
-      (when action (>! ch-out action))
-      (when @running? (recur new-portfolio)))))
+    (when-let [{:keys [portfolio-updates tick-data]} (<! ch-in)]
+      (let [new-portfolio (portfolio/update-portfolio portfolio portfolio-updates)]
+        (when-let [action (strategy/evaluate strategy new-portfolio tick-data)]
+          (>! ch-out action))
+        (when @running? (recur new-portfolio))))))
 
 (defrecord Component [config running?]
   component/Lifecycle
@@ -29,4 +29,4 @@
     this))
 
 (defn new [config]
-  (Component. config (atom false)))
+  (Component. config (atom true)))
