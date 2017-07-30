@@ -1,6 +1,7 @@
 (ns xicotrader.service.simulator-service
   (:require
-    [clojure.core.async :as a :refer [go-loop <! >!]]
+    [clojure.core.async :as a :refer [go-loop <! >! <!! >!!]]
+    [clojure.core.async.impl.protocols :as async-protocols]
     [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [clj-http.client :as http]
@@ -14,22 +15,33 @@
                                            :secret-key secret-key}})]
     (cheshire/parse-string (:body response))))
 
-(defn get-tick [{:keys [host port public-url]} pair]
+(def ch (a/chan))
+
+(defn get-tick [{:keys [host port public-url]} pair & [success-callback error-callback]]
   (let [url (format "http://%s:%s/%s/%s" host port public-url "tick")
-        response (http/get url
-                           {:query-params {:pair pair}})]
-    (cheshire/parse-string (:body response))))
+        on-success (or success-callback (fn [response] (>!! ch response)))]
+    (http/get url
+              {:query-params {:pair pair}
+               :async? true}
+              (fn [response]
+                (-> (:body response) cheshire/parse-string on-success))
+              (fn [exeption]))
+    (when-not success-callback
+      (println "no callback fn")
+      (<!! ch))))
 
 (defn poll-loop [{:keys [ch-in]} config]
   (go-loop []
-    (when-let [event (>! ch-in {:tick-data         (get-tick config "ETHEUR")
-                                :portfolio-updates {}})]
-      (Thread/sleep 1000)
+    (when-not (async-protocols/closed? ch-in)
+      (get-tick config "ETHEUR" (fn [response]
+                                  (>!! ch-in {:tick-data         response
+                                              :portfolio-updates {}})))
+      (Thread/sleep (:polltime config))
       (recur))))
 
 (defn order-loop [{:keys [ch-out]} config]
   (go-loop []
-    (let [action (<! ch-out)]
+    (when-let [action (<! ch-out)]
       (log/info "Will send" action)
       (recur))))
 
@@ -39,6 +51,8 @@
     (assoc this :ch-in  (a/chan)
                 :ch-out (a/chan)))
   (stop [this]
+    (a/close! (:ch-in this))
+    (a/close! (:ch-out this))
     this)
 
   service/Service

@@ -13,7 +13,9 @@
       (with-open [^Reader reader (io/reader file-resource)]
         (.load props reader)
         (into {} (for [[k v] props]
-                   [(keyword k) (read-string v)]))))))
+                   (let [value (read-string v)]
+                     [(keyword k) (try (Integer/parseInt value)
+                                       (catch Exception _ value))])))))))
 
 (defn config [profile module]
   (load-props (format "conf/%s/%s.properties" (name profile) (name module))))
