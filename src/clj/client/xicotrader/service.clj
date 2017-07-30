@@ -1,7 +1,7 @@
 (ns xicotrader.service)
 
 (defprotocol Service
-  (init [this]))
+  (init [this trade-assets]))
 
-(defn init [service]
-  (.init service))
+(defn init [service trade-assets]
+  (.init service trade-assets))

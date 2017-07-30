@@ -1,6 +1,7 @@
 (ns xicotrader.config
   (:require
     [clojure.java.io :as io]
+    [clojure.edn :as edn]
     [xicotrader.util :refer [ignoring-exceptions]])
   (:import (java.util Properties)
            (java.io Reader)))
@@ -15,7 +16,12 @@
         (into {} (for [[k v] props]
                    (let [value (read-string v)]
                      [(keyword k) (try (Integer/parseInt value)
-                                       (catch Exception _ value))])))))))
+                                       (catch Exception _
+                                         (try (let [val (edn/read-string value)]
+                                                (if (coll? val)
+                                                  val
+                                                  value))
+                                              (catch Exception _ value))))])))))))
 
 (defn config [profile module]
   (load-props (format "conf/%s/%s.properties" (name profile) (name module))))

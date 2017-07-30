@@ -13,7 +13,7 @@
 (defn- strategy-loop [strategy ch-in ch-out]
   (go-loop [market {}]
     (when-let [{:keys [portfolio tick-data]} (<! ch-in)]
-      (let [updated-market (apply merge market tick-data)]
+      (let [updated-market (assoc market (:pair tick-data) (:last tick-data))]
         (>! ch-out (.compute strategy portfolio market tick-data))
         (recur updated-market)))))
 

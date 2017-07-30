@@ -3,8 +3,8 @@
     [com.stuartsierra.component :as component]
     [xicotrader.strategy :as strategy]))
 
-(defn do-arbitrage [this portfolio tick-data]
-  {:buy "ETHUSD"
+(defn do-arbitrage [portfolio market tick-data]
+  {:buy (:pair tick-data)
    :qty 1.0})
 
 (defrecord Component [config]

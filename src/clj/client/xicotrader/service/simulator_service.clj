@@ -19,23 +19,25 @@
 
 (defn get-tick [{:keys [host port public-url]} pair & [success-callback error-callback]]
   (let [url (format "http://%s:%s/%s/%s" host port public-url "tick")
-        on-success (or success-callback (fn [response] (>!! ch response)))]
+        on-success (or success-callback (fn [response] (>!! ch response)))
+        parse-response #(cheshire/parse-string % keyword)]
     (http/get url
               {:query-params {:pair pair}
                :async? true}
               (fn [response]
-                (-> (:body response) cheshire/parse-string on-success))
+                (-> (:body response) parse-response on-success))
               (fn [exeption]))
     (when-not success-callback
-      (println "no callback fn")
       (<!! ch))))
 
-(defn poll-loop [{:keys [ch-in]} config]
+(defn poll-loop [{:keys [ch-in]} config pairs]
   (go-loop []
     (when-not (async-protocols/closed? ch-in)
-      (get-tick config "ETHEUR" (fn [response]
-                                  (>!! ch-in {:tick-data         response
-                                              :portfolio-updates {}})))
+      (doseq [pair pairs]
+        (get-tick config ((config :translation) pair)
+                  (fn [response]
+                    (>!! ch-in {:tick-data         (assoc response :pair pair)
+                                :portfolio-updates {}}))))
       (Thread/sleep (:polltime config))
       (recur))))
 
@@ -56,8 +58,8 @@
     this)
 
   service/Service
-  (init [this]
-    (poll-loop this config)
+  (init [this trade-assets]
+    (poll-loop this config trade-assets)
     (order-loop this config)
     (get-user-data config)))
 
