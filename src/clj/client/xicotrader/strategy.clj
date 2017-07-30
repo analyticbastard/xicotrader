@@ -1,6 +1,6 @@
 (ns xicotrader.strategy
   (:require
-    [clojure.core.async :as a :refer [go-loop >! <! <!! >!!]]
+    [clojure.core.async :as a :refer [go-loop >! <! <!! >!! alts!!]]
     [com.stuartsierra.component :as component]))
 
 (defprotocol Strategy
@@ -8,13 +8,14 @@
 
 (defn evaluate [{:keys [ch-in ch-out]} portfolio tick-data]
   (>!! ch-in {:portfolio portfolio :tick-data tick-data})
-  (<!! ch-out))
+  (alts!! [ch-out (a/timeout 100)]))
 
 (defn- strategy-loop [strategy ch-in ch-out]
   (go-loop [market {}]
     (when-let [{:keys [portfolio tick-data]} (<! ch-in)]
-      (let [updated-market (assoc market (:pair tick-data) (:last tick-data))]
-        (>! ch-out (.compute strategy portfolio market tick-data))
+      (let [updated-market (assoc market (:pair tick-data) (:last tick-data))
+            action (.compute strategy portfolio updated-market tick-data)]
+        (when action (>! ch-out action))
         (recur updated-market)))))
 
 (defrecord Component [config]
