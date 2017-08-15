@@ -4,17 +4,20 @@
     [com.stuartsierra.component :as component]))
 
 (defprotocol Strategy
-  (compute [strategy portfolio market tick-data]))
+  (compute [strategy portfolio portfolio-updates market event]))
 
-(defn evaluate [{:keys [ch-in ch-out]} portfolio tick-data]
-  (>!! ch-in {:portfolio portfolio :tick-data tick-data})
-  (alts!! [ch-out (a/timeout 100)]))
+(defn evaluate [{:keys [ch-in ch-out]}
+                portfolio
+                {:keys [portfolio-updates] :as event}]
+  (>!! ch-in (assoc event :portfolio portfolio))
+  (let [[msg ch] (alts!! [ch-out (a/timeout 100)])]
+    (if (= ch ch-out) msg {})))
 
 (defn- strategy-loop [strategy ch-in ch-out]
   (go-loop [market {}]
-    (when-let [{:keys [portfolio tick-data]} (<! ch-in)]
+    (when-let [{:keys [portfolio portfolio-updates tick-data]} (<! ch-in)]
       (let [updated-market (assoc market (:pair tick-data) (:last tick-data))
-            action (.compute strategy portfolio updated-market tick-data)]
+            action (.compute strategy portfolio portfolio-updates updated-market tick-data)]
         (when action (>! ch-out action))
         (recur updated-market)))))
 

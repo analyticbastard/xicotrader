@@ -39,6 +39,10 @@
   (http-response/ok
     (private/get-portfolio user-id)))
 
+(defn private-endpoint-trade [user-id operation pair qty]
+  (http-response/ok
+    (or (private/trade! user-id operation pair qty) {})))
+
 (compojure-api/defapi xicotrader-api
   {:swagger
    {:ui "/sw"
@@ -62,7 +66,17 @@
       :query-params [user-id :- s/Str
                      secret-key :- s/Str]
       (with-validation user-id secret-key
-        (private-endpoint-portfolio user-id)))))
+        (private-endpoint-portfolio user-id)))
+    (POST "/trade" []
+      :summary "Trade a pair"
+      :query-params [user-id :- s/Str
+                     secret-key :- s/Str]
+      :body-params [operation :- (s/enum :buy :sell)
+                    pair :- (apply s/enum (public/get-pairs))
+                    qty :- Double]
+      (with-validation
+        user-id secret-key
+        (private-endpoint-trade user-id operation pair qty)))))
 
 (defroutes app xicotrader-api)
 

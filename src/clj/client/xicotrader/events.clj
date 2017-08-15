@@ -1,6 +1,6 @@
 (ns xicotrader.events
   (:require
-    [clojure.core.async :as a :refer [go-loop >! <! >!!]]
+    [clojure.core.async :as a :refer [go-loop >! <! >!! alts!!]]
     [com.stuartsierra.component :as component]
     [xicotrader.service :as service]))
 

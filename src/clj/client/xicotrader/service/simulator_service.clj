@@ -2,6 +2,7 @@
   (:require
     [clojure.core.async :as a :refer [go-loop <! >! <!! >!!]]
     [clojure.core.async.impl.protocols :as async-protocols]
+    [clojure.edn :as edn]
     [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [clj-http.client :as http]
@@ -17,10 +18,12 @@
 
 (def ch (a/chan))
 
+(defn parse-response [body]
+  (cheshire/parse-string body keyword))
+
 (defn get-tick [{:keys [host port public-url]} pair & [success-callback error-callback]]
   (let [url (format "http://%s:%s/%s/%s" host port public-url "tick")
-        on-success (or success-callback (fn [response] (>!! ch response)))
-        parse-response #(cheshire/parse-string % keyword)]
+        on-success (or success-callback (fn [response] (>!! ch response)))]
     (http/get url
               {:query-params {:pair pair}
                :async? true}
@@ -29,6 +32,17 @@
               (fn [exeption]))
     (when-not success-callback
       (<!! ch))))
+
+(defn trade [{:keys [host port private-url user-id secret-key]} action]
+  (let [url (format "http://%s:%s/%s/%s" host port private-url "trade")
+        response (http/post url
+                            {:query-params {:user-id user-id
+                                            :secret-key secret-key}
+                             :form-params action
+                             :content-type :application/edn
+                             :async? false})
+        body (-> (:body response) edn/read-string)]
+    (if (empty? body) nil body)))
 
 (defn poll-loop [{:keys [ch-in]} config pairs]
   (go-loop []
@@ -41,10 +55,14 @@
       (Thread/sleep (:polltime config))
       (recur))))
 
-(defn order-loop [{:keys [ch-out]} config]
+(defn order-loop [{:keys [ch-out ch-in]} config]
   (go-loop []
-    (when-let [action (<! ch-out)]
-      (log/info "Will send" action)
+    (when-let [{:keys [pair] :as action} (<! ch-out)]
+      (when-let [portfolio-updates (and (seq action)
+                                        (trade config
+                                               (assoc action
+                                                 :pair ((config :translation) pair))))]
+        (>! ch-in {:portfolio-updates (portfolio-updates (config :user-id))}))
       (recur))))
 
 (defrecord Component [config]

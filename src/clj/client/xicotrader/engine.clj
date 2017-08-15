@@ -8,12 +8,12 @@
      [portfolio :as portfolio]
      [strategy :as strategy]]))
 
-(defn- engine-loop [{:keys [ch-in ch-out]} strategy config initial-portfolio]
+(defn- engine-loop [{events-in :ch-in events-out :ch-out} strategy config initial-portfolio]
   (go-loop [portfolio initial-portfolio]
-    (when-let [{:keys [portfolio-updates tick-data]} (<! ch-in)]
+    (when-let [{:keys [portfolio-updates] :as event} (<! events-in)]
       (let [new-portfolio (portfolio/update-portfolio portfolio portfolio-updates)]
-        (when-let [action (strategy/evaluate strategy new-portfolio tick-data)]
-          (>! ch-out action)
+        (when-let [action (strategy/evaluate strategy new-portfolio event)]
+          (>! events-out action)
           (recur new-portfolio))))))
 
 (defrecord Component [config]
