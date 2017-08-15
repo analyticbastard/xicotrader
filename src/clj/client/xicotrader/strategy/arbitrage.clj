@@ -5,70 +5,74 @@
     [com.stuartsierra.component :as component]
     [xicotrader.strategy :as strategy]))
 
-(def currently-traded-asset (atom nil))
+(def currently-trading? (atom false))
 
 (defn do-when-previous-action-filled [portfolio-updates]
-  )
+  (println portfolio-updates)
+  (when (seq portfolio-updates)
+    (reset! currently-trading? false)))
 
-(defn cycle-eur [portfolio {:keys [last-etheur last-btceur last-ethbtc]}]
-  (-> (get-in portfolio ["EUR"])
-      (/ last-etheur)
+(defn cycle-usd [portfolio {:keys [last-ethusd last-btcusd last-ethbtc]}]
+  (-> (get-in portfolio ["USD"])
+      (/ last-ethusd)
       (* last-ethbtc)
-      (* last-btceur)))
+      (* last-btcusd)))
 
-(defn cycle-eth [portfolio {:keys [last-etheur last-btceur last-ethbtc]}]
+(defn cycle-eth [portfolio {:keys [last-ethusd last-btcusd last-ethbtc]}]
   (-> (get-in portfolio ["ETH"])
       (* last-ethbtc)
-      (* last-btceur)
-      (/ last-etheur)))
+      (* last-btcusd)
+      (/ last-ethusd)))
 
-(defn cycle-btc [portfolio {:keys [last-etheur last-btceur last-ethbtc]}]
+(defn cycle-btc [portfolio {:keys [last-ethusd last-btcusd last-ethbtc]}]
   (-> (get-in portfolio ["BTC"])
-      (* last-btceur)
-      (/ last-etheur)
+      (* last-btcusd)
+      (/ last-ethusd)
       (* last-ethbtc)))
 
-(defn get-pair-to-trade [max-eurethbtceur max-ethbtceureth max-btceurethbtc
-                         {:keys [last-etheur last-btceur last-ethbtc]}]
+(defn get-pair-to-trade [max-usdethbtcusd max-ethbtcusdeth max-btcusdethbtc
+                         {:keys [last-ethusd last-btcusd last-ethbtc]}]
   (let [pair (key (apply max-key val
-                         {"ETHEUR" max-eurethbtceur
-                          "ETHBTC" (* max-ethbtceureth last-etheur)
-                          "BTCEUR" (* max-btceurethbtc last-btceur)}))]
-    [pair (if (= pair "ETHEUR") :buy :sell)]))
+                         {"ETHUSD" max-usdethbtcusd
+                          "ETHBTC" (* max-ethbtcusdeth last-ethusd)
+                          "BTCUSD" (* max-btcusdethbtc last-btcusd)}))]
+    [pair (if (= pair "ETHUSD") :buy :sell)]))
 
-(defn get-qty [portfolio {:keys [last-etheur last-btceur last-ethbtc]} what-to-buy]
+(defn get-qty [portfolio {:keys [last-ethusd last-btcusd last-ethbtc]} what-to-buy]
   (case what-to-buy
-    "ETHEUR" (/ (portfolio "EUR") last-etheur)
+    "ETHUSD" (/ (portfolio "USD") last-ethusd)
     "ETHBTC" (* (portfolio "ETH") last-ethbtc)
-    "BTCEUR" (* (portfolio "BTC") last-btceur)))
+    "BTCUSD" (* (portfolio "BTC") last-btcusd)))
 
 (defn get-source-asset [what-to-buy]
-  ({"ETHEUR" "EUR"
+  ({"ETHUSD" "USD"
     "ETHBTC" "ETH"
-    "BTCEUR" "BTC"} what-to-buy))
+    "BTCUSD" "BTC"} what-to-buy))
 
-(defn do-arbitrage [portfolio market {:keys [portfolio-updates]}]
-  (let [market (-> (set/rename-keys market {"ETHEUR" "last-etheur"
-                                            "ETHBTC" "last-ethbtc"
-                                            "BTCEUR" "last-btceur"})
-                   (walk/keywordize-keys)
-                   (select-keys [:last-etheur :last-ethbtc :last-btceur]))
-        all-exist? (fn [[last-etheur last-btceur last-ethbtc]]
-                     (and last-etheur last-btceur last-ethbtc))]
-    (when (all-exist? (vals market))
-      (let [[max-eurethbtceur
-             max-ethbtceureth
-             max-btceurethbtc] ((juxt (partial cycle-eur portfolio)
-                                      (partial cycle-eth portfolio)
-                                      (partial cycle-btc portfolio)) market)
-            [what-to-trade
-             operation] (get-pair-to-trade max-eurethbtceur max-ethbtceureth
-                                           max-btceurethbtc market)
-            qty (get-qty portfolio market what-to-trade)
-            what-to-spend (get-source-asset what-to-trade)]
-        {:operation operation
-         :pair      what-to-trade
-         :qty       qty}))))
+(defn do-arbitrage [portfolio market tick-data]
+  (when (or (not @currently-trading?) (seq tick-data))
+    (let [market (-> (set/rename-keys market {"ETHUSD" "last-ethusd"
+                                              "ETHBTC" "last-ethbtc"
+                                              "BTCUSD" "last-btcusd"})
+                     (walk/keywordize-keys)
+                     (select-keys [:last-ethusd :last-ethbtc :last-btcusd]))
+          all-exist? (fn [[last-ethusd last-btcusd last-ethbtc]]
+                       (and last-ethusd last-btcusd last-ethbtc))]
+      (when (all-exist? (vals market))
+        (let [[max-usdethbtcusd
+               max-ethbtcusdeth
+               max-btcusdethbtc] ((juxt (partial cycle-usd portfolio)
+                                        (partial cycle-eth portfolio)
+                                        (partial cycle-btc portfolio)) market)
+              [what-to-trade
+               operation] (get-pair-to-trade max-usdethbtcusd max-ethbtcusdeth
+                                             max-btcusdethbtc market)
+              qty (get-qty portfolio market what-to-trade)
+              what-to-spend (get-source-asset what-to-trade)]
+          (reset! currently-trading? true)
+          {:operation operation
+           :pair      what-to-trade
+           :qty       qty})))))
 
 (defrecord Component [config]
   component/Lifecycle

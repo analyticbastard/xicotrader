@@ -5,7 +5,7 @@
   {"javier" "AEIOU"})
 
 (def user-portfolios
-  (atom {"javier" {"EUR" 5000.
+  (atom {"javier" {"USD" 5000.
                    "BTC" 1.
                    "ETH" 5.}}))
 
@@ -24,6 +24,12 @@
         last-price (if buy? last-price (/ 1 last-price))
         source-funds (* last-price qty)]
     (when (>= (portfolio source-currency) source-funds)
+      (println (if buy? "buy " "sell")
+               (if buy? target-currency source-currency)
+               (format "%.4f" (if buy? qty source-funds))
+               (if buy? "with" "for")
+               (if buy? source-currency target-currency)
+               (format "%.4f" (if buy? source-funds qty)))
       (swap! user-portfolios update
              user-id (fn [$]
                        (-> $
