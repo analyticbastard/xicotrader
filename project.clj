@@ -27,5 +27,5 @@
              :client {:source-paths ["src/clj/client" "src/clj/common"]
                       :resource-paths ["resources/client"]}
              :simulator {:source-paths ["src/clj/simulator" "src/clj/common"]
-                         :resource-paths ["resources/simulator"]}
+                         :resource-paths ["resources/simulator" "resources/marketdata"]}
              :prod {:aot :all}})

@@ -1,5 +1,8 @@
 (ns xicotrader.private
-  (:require [xicotrader.public :as public]))
+  (:require
+    [xicotrader
+     [public :as public]
+     [util :as util]]))
 
 (def user-secrets
   {"javier" "AEIOU"})
@@ -24,12 +27,7 @@
         last-price (if buy? last-price (/ 1 last-price))
         source-funds (* last-price qty)]
     (when (>= (portfolio source-currency) source-funds)
-      (println (if buy? "buy " "sell")
-               (if buy? target-currency source-currency)
-               (format "%.4f" (if buy? qty source-funds))
-               (if buy? "with" "for")
-               (if buy? source-currency target-currency)
-               (format "%.4f" (if buy? source-funds qty)))
+      (util/print-trade buy? target-currency source-currency qty source-funds last-price)
       (swap! user-portfolios update
              user-id (fn [$]
                        (-> $
