@@ -1,9 +1,10 @@
 (ns xicotrader.service.simulator-service
   (:require
-    [clojure.core.async :as a :refer [go-loop <! >! <!! >!!]]
-    [clojure.core.async.impl.protocols :as async-protocols]
+    [clojure.set :as set]
     [clojure.edn :as edn]
     [clojure.tools.logging :as log]
+    [clojure.core.async :as a :refer [go-loop <! >! <!! >!!]]
+    [clojure.core.async.impl.protocols :as async-protocols]
     [com.stuartsierra.component :as component]
     [clj-http.client :as http]
     [cheshire.core :as cheshire]
