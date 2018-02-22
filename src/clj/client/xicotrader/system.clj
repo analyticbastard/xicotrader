@@ -20,19 +20,19 @@
 
 (defn make-system-component [{:keys [engine events strategy] :as config}]
   (let [system-map (config/system-deps config)
-        strategy-key (get-in system-map [:strategy :strategy])
-        strategy-component (loader/load-strategy config system-map strategy-key)
+        strategy-jar (get-in system-map [:strategy :strategy])
+        strategy-component (loader/load-strategy config system-map strategy-jar)
         service-key (get-in system-map [:events :service])
         service-component (loader/load-service config system-map service-key)]
-    (if (and strategy-key strategy-component
+    (if (and strategy-jar strategy-component
              service-key service-component)
       (component/system-map
         :engine (engine/new engine)
         :events (events/new events)
         :strategy (strategy/new strategy)
         service-key service-component
-        strategy-key strategy-component)
-      (handle-init-fail service-key strategy-key service-component strategy-component))))
+        strategy-jar strategy-component)
+      (handle-init-fail service-key strategy-jar service-component strategy-component))))
 
 (defn start-system [system]
   (component/start system))

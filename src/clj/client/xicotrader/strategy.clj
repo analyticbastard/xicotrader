@@ -1,7 +1,8 @@
 (ns xicotrader.strategy
   (:require
     [clojure.core.async :as a :refer [go-loop >! <! <!! >!! alts!!]]
-    [com.stuartsierra.component :as component]))
+    [com.stuartsierra.component :as component])
+  (:gen-class))
 
 (defprotocol Strategy
   (compute [strategy portfolio portfolio-updates market event]))
