@@ -25,7 +25,7 @@
   Events
   (init [this]
     (let [service (:service this)
-          portfolio (service/init service (:trade config))]
+          portfolio (service/init-service service (:trade config))]
       portfolio))
 
   component/Lifecycle

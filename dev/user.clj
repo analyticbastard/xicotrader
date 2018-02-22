@@ -8,6 +8,12 @@
 
 (def system nil)
 
+(def dev-key :dev)
+(def prod-key :dev)
+
+(def dev-profile {:profile dev-key})
+(def prod-profile {:profile dev-key})
+
 (defmacro when-not-system [& body]
   `(if-not system
      (do ~@body)
@@ -19,12 +25,17 @@
      (println "System not found!")))
 
 (defn- dev-config []
-  (config/system-config :dev
-                        (keys (system/make-system-dependencies))))
+  (merge dev-profile
+         (config/system-config
+           (config/system-deps dev-profile)
+           dev-profile)))
 
-(defn make-system [config]
+(defn make-system
+  "Makes dev system, assocs the :dev to the profile in config"
+  [config]
   (-> (system/make-system-component config)
-      (component/system-using (system/make-system-dependencies))))
+      (component/system-using
+        (config/system-deps (select-keys config [:profile])))))
 
 (defn start
   ([] (start (dev-config)))

@@ -1,0 +1,6 @@
+{:engine    {:events   :events
+             :strategy :strategy}
+ :strategy  {:strategy :arbitrage}
+ :events    {:service :simulator}
+ :simulator {}
+ :arbitrage {}}

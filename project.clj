@@ -19,6 +19,7 @@
                  [metosin/ring-http-response "0.6.5" :exclusions [ring/ring-core]]
                  [ring/ring-json "0.4.0" :exclusions [org.clojure/clojure]]]
   :source-paths ["src/clj/common"]
+  :test-paths ["test/clj/common"]
   :resource-paths ["resources/client" "resources/simulator"]
   :target-path "target/%s"
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10" :exclusions [org.clojure/clojure]]

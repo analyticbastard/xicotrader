@@ -1,0 +1,10 @@
+{:host        "localhost"
+ :port        3000
+ :private-url "api/private"
+ :public-url  "api/public"
+ :user-id     "javier"
+ :secret-key  "AEIOU"
+ :polltime    1000
+ :translation {"ETHUSD" "ETHUSD"
+               "ETHBTC" "ETHBTC"
+               "BTCUSD" "BTCUSD"}}
