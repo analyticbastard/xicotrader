@@ -4,16 +4,31 @@
 [![Deps](https://versions.deps.co/analyticbastard/xicotrader/status.svg)](https://versions.deps.co/analyticbastard/xicotrader)
 [![codecov](https://codecov.io/gh/analyticbastard/xicotrader/branch/master/graph/badge.svg)](https://codecov.io/gh/analyticbastard/xicotrader)
 
-Automatically trade cryoptocurrency, an academic example
+Automatically trade cryoptocurrency: a growing ex-academic example.
 
-The software consists of a automatic trading client, and a simulator that mocks
+## Current state
+
+The software currently consists of a automatic trading client, and a simulator that mocks
 a data and order service.
 
-An arbitration strategy is implemented to illustrate the automatic trading.
+The system loads the strategy from an external JAR file using [pomegranate](), which
+must implement a Clojure protocol (Java interface) defined in this project. This
+protocol is the entry point to the strategy, which is fed with data as this trading
+client passes it on, along with the current portfolio state.
+
+### Example of a trading strategy
+
+A simple arbitrage strategy is implemented in the subproject folder `arbitrage`
+to illustrate the automatic trading.
 Upon each tick and current state, the strategy selects the best assets to cycle
 from USD, BTC and ETH.
 
-## Grab some data
+You need to build this project (see instructions within) and place the resulting
+JAR file in **TBD**, so that the project can load up the classes within the JAR.
+
+## Usage
+
+### Grab some data
 
 The simulator understands the Poloniex API format and assumes a 5 min inter-tick period, e.g.,
 
@@ -33,14 +48,13 @@ curl https://poloniex.com/public?command=returnChartData&currencyPair=USDT_BTC&e
 curl https://poloniex.com/public?command=returnChartData&currencyPair=USDT_ETH&end=9999999999&period=300&start=1405699200 > ethusd.json
 ```
 
-## Usage
-
 This is an example intended to use with a couple of REPLs.
 
 ```bash
 lein with-profile simulator,dev repl
 ```
 
+On another terminal
 
 ```bash
 lein with-profile client,dev repl
@@ -63,6 +77,18 @@ software comes as is and the author offers no warranty.
 For a real situation, a service that implements connectivity with your exchange 
 can be implemented and added to the system dependencies in sustitution of the
 component that implements connectivity with the simulator.
+
+### Testing
+
+```bash
+lein with-profile +dev,+client test
+```
+
+### Code coverage
+
+```bash
+CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein with-profile +dev,+client cloverage --codecov
+```
 
 
 ## License
