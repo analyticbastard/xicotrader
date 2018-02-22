@@ -1,5 +1,8 @@
 # xicotrader
 
+[![CircleCI](https://circleci.com/gh/analyticbastard/xicotrader.svg?style=shield)](https://circleci.com/gh/analyticbastard/xicotrader)
+[![Deps](https://versions.deps.co/analyticbastard/xicotrader/status.svg)](https://versions.deps.co/analyticbastard/xicotrader)
+
 Automatically trade cryoptocurrency, an academic example
 
 The software consists of a automatic trading client, and a simulator that mocks
