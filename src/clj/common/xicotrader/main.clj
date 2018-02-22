@@ -9,4 +9,4 @@
   [& args]
   (system/start-system
     (system/make-system-component
-      (config/system-config :prod (keys (system/make-system-dependencies))))))
+      (config/system-config config/prod-profile (keys (system/make-system-dependencies))))))

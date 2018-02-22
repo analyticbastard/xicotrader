@@ -15,9 +15,6 @@
     :webserver     (create-webserver webserver)
     :webhandler    (webhandler/new)))
 
-(defn make-system-dependencies []
-  {:webserver     {:handler :webhandler}})
-
 (defn start-system [system]
   (component/start system))
 

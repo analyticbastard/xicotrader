@@ -1,0 +1,3 @@
+{:cron   "/2 * * * * * *"
+ :assets {"ETHBTC" "XETHXXBT"}
+ :btceth "XETHXXBT"}
