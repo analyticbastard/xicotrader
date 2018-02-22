@@ -9,10 +9,7 @@
 (def system nil)
 
 (def dev-key :dev)
-(def prod-key :dev)
-
 (def dev-profile {:profile dev-key})
-(def prod-profile {:profile dev-key})
 
 (defmacro when-not-system [& body]
   `(if-not system

@@ -40,3 +40,5 @@ jobs:
 
       # run tests!
       - run: lein with-profile +dev,+client test
+      - run: CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein with-profile +dev,+client cloverage --codecov
+      - run: curl -s https://codecov.io/bash | bash -s - -f target/coverage/codecov.json

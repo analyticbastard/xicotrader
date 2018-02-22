@@ -22,6 +22,7 @@
   :test-paths ["test/clj/common"]
   :resource-paths ["resources/client" "resources/simulator"]
   :target-path "target/%s"
+  :plugins [[lein-cloverage "1.0.7-SNAPSHOT"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10" :exclusions [org.clojure/clojure]]
                                   [org.clojure/tools.nrepl "0.2.12" :exclusions [org.clojure/clojure]]]
                    :source-paths ["dev"]}

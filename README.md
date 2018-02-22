@@ -2,6 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/analyticbastard/xicotrader.svg?style=shield)](https://circleci.com/gh/analyticbastard/xicotrader)
 [![Deps](https://versions.deps.co/analyticbastard/xicotrader/status.svg)](https://versions.deps.co/analyticbastard/xicotrader)
+[![codecov](https://codecov.io/gh/analyticbastard/xicotrader/branch/master/graph/badge.svg)](https://codecov.io/gh/analyticbastard/xicotrader)
 
 Automatically trade cryoptocurrency, an academic example
 
