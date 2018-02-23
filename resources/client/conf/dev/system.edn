@@ -1,6 +1,5 @@
 {:engine    {:events   :events
              :strategy :strategy}
- :strategy  {:strategy :arbitrage}
+ :strategy  {:strategy "arbitrage.jar"}
  :events    {:service :simulator}
- :simulator {}
- :arbitrage {}}
+ :simulator {}}

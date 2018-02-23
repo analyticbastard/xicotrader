@@ -1,11 +1,12 @@
-(ns xicotrader.strategy.arbitrage
+(ns xicotrader.arbitrage.core
   (:require
     [clojure.set :as set]
     [clojure.walk :as walk]
     [com.stuartsierra.component :as component]
-    [xicotrader
-     [strategy :as strategy]
-     [util :as util]]))
+    [xicotrader.strategy :as strategy]
+    [xicotrader.arbitrage.util :as util :refer [print-trade]])
+  (:gen-class))
+
 
 (def currently-trading? (atom false))
 
@@ -78,23 +79,8 @@
                   last-price (if buy? last-price (/ 1 last-price))
                   source-funds (* last-price qty)]
               (when-not @currently-trading?
-                (util/print-trade buy? what-to-trade what-to-spend qty source-funds last-price))
+                (print-trade buy? what-to-trade what-to-spend qty source-funds last-price))
               (reset! currently-trading? true)
               {:operation operation
                :pair      what-to-trade
                :qty       qty})))))))
-
-(defrecord Component [config]
-  component/Lifecycle
-  (start [this]
-    this)
-  (stop [this]
-    this)
-
-  strategy/Strategy
-  (compute [strategy portfolio portfolio-updates market tick-data]
-    (do-when-previous-action-filled portfolio-updates)
-    (do-arbitrage portfolio market tick-data)))
-
-(defn new [config]
-  (Component. config))

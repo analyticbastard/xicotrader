@@ -11,6 +11,7 @@
                  [cheshire "5.7.1"]
                  [im.chit/cronj "1.4.4"]
                  [clj-http "3.6.1"]
+                 [com.cemerick/pomegranate "0.3.1"]
 
                  ;; Web stuff
                  [metosin/compojure-api "1.1.6" :exclusions [org.clojure/clojure]]
@@ -20,7 +21,7 @@
                  [ring/ring-json "0.4.0" :exclusions [org.clojure/clojure]]]
   :source-paths ["src/clj/common"]
   :test-paths ["test/clj/common"]
-  :resource-paths ["resources/client" "resources/simulator"]
+  :resource-paths ["resources/common"]
   :target-path "target/%s"
   :plugins [[lein-cloverage "1.0.7-SNAPSHOT"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10" :exclusions [org.clojure/clojure]]
@@ -30,4 +31,4 @@
                       :resource-paths ["resources/client"]}
              :simulator {:source-paths ["src/clj/simulator" "src/clj/common"]
                          :resource-paths ["resources/simulator" "resources/marketdata"]}
-             :prod {:aot :all}})
+             :uberjar {:aot :all}})
