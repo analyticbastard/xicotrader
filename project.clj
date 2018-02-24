@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.3.442"]
                  [org.clojure/tools.logging "0.3.1"]
+                 [clj-time/clj-time "0.12.0"]
                  [medley "1.0.0"]
                  [prismatic/schema "1.0.4"]
                  [com.stuartsierra/component "0.3.0"]
