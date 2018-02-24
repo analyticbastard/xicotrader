@@ -78,6 +78,12 @@ For a real situation, a service that implements connectivity with your exchange
 can be implemented and added to the system dependencies in sustitution of the
 component that implements connectivity with the simulator.
 
+### Building
+
+```bash
+lein with-profile +client uberjar
+```
+
 ### Testing
 
 ```bash
@@ -96,6 +102,62 @@ The software uses Stuart Sierra's [component](https://github.com/stuartsierra/co
 and each component feeds data into the system and receives actions from the inner components that
 are processed and passed on outwards. This component communication is done with
 [core async](https://github.com/clojure/core.async).
+
+The system is very simple and consists of only a small number of components
+
+```
++------------+           +------------+c-in  s-out+------------+
+|            |           |            <-----------+            |
+|            |  compute  |            |           |            |
+|  Strategy  +-----------+  Strategy  |           | Controller |
+|  impl      |           |  holder    |           |            |
+|            |           |            |       s-in|            |
+|            |           |            +----------->            |
++------------+           +------------+c-out      +--+------^--+
+                                                 send|      |rec
+                                                     |      |
+                                                     |      |
+                                                     |      |
+                                     +------------+  |      |  +------------+
+                                     |            |  |      |  |            |
+                                     |  Service   <--+      +--+  Service   |
+                                     |  sender    |con      con|  receiver  |
+                                     |            |            |            |
+                                     |            |            |            |
+                                     |            |            |            |
+                                     +-----+------+            +------+-----+
+                                           |send                      |
+                                           |                          |
+                                           |      +------------+      |
+                                           |      |            |      |
+                                           |      |            |      |
+                                           +------+  connector +------+
+                                                  |  impl      |receive
+                                                  |            |
+                                                  |            |
+                                                  +------------+
+```
+
+When the system is initialized from the configuration files, it loads up the strategy implementation
+and the service connector implementations from external JARs using [pomegranate](https://github.com/cemerick/pomegranate).
+
+The service connector implementation is expected to connect to an exchange (with parameters potentially
+passed as configuration from files) and start receiving data. It will then call a method from the
+recevier (whose reference has been passed on at init time in the form of an interface called
+and injected by a dependency). The receiver will then
+asynchronously send the data to the Controller, which oversees that everything is well (alarms and monitoring
+will go here) and passes it on to the strategy holder, which has a reference to the externally
+loaded strategy implementation. It will call it with the data feed (which includes tick data 
+and potentially the most up to date portfolio according to what the exchange has sent). The strategy will then
+compute a number of actions, one per coin trading pair, and sent it all the way back.
+The service sender will synchronously call the service connector with the actions to be processed.
+
+Notice that the asynchronicity is dealt with in the internal components (strategy holder,
+sender and receiver), thus sparing the implementations
+from dealing with asynchronicity or core.async details.
+
+The names of the endpoints in the diagram are the names of the core.async channels and the
+interface methods.
 
 ### TODO
 
