@@ -1,11 +1,14 @@
 (ns xicotrader.strategy
   (:require
     [clojure.core.async :as a :refer [go-loop >! <! <!! >!! alts!!]]
-    [com.stuartsierra.component :as component])
+    [clojure.tools.logging :as log]
+    [com.stuartsierra.component :as component]
+    [schema.core :as s]
+    [xicotrader.schema :refer :all])
   (:gen-class))
 
 (defprotocol Strategy
-  (compute [strategy portfolio portfolio-updates market event]))
+  (compute [this strategy portfolio tick-data]))
 
 (defn evaluate [{:keys [ch-in ch-out]}
                 portfolio
@@ -14,13 +17,20 @@
   (let [[msg ch] (alts!! [ch-out (a/timeout 100)])]
     (if (= ch ch-out) msg {})))
 
+(defn safe-compute [strategy portfolio tick-data]
+  (try
+    (s/validate Portfolio portfolio)
+    (s/validate Tick tick-data)
+    (s/validate Order (.compute strategy portfolio tick-data))
+    (catch Throwable t
+      (log/error (.getMessage t)))))
+
 (defn- strategy-loop [strategy ch-in ch-out]
-  (go-loop [market {}]
-    (when-let [{:keys [portfolio portfolio-updates tick-data]} (<! ch-in)]
-      (let [updated-market (assoc market (:pair tick-data) (:last tick-data))
-            action (.compute strategy portfolio portfolio-updates updated-market tick-data)]
+  (go-loop []
+    (when-let [{:keys [portfolio tick-data]} (<! ch-in)]
+      (let [action (safe-compute strategy portfolio tick-data)]
         (when action (>! ch-out action))
-        (recur updated-market)))))
+        (recur)))))
 
 (defrecord Component [config]
   component/Lifecycle

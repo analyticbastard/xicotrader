@@ -5,14 +5,16 @@
     [xicotrader.config :refer :all]
     [xicotrader.strategy :as strategy]))
 
-(defn fake-strategy-loader [config system-map strategy-jar]
-  (defrecord Component [config]
-    component/Lifecycle
-    (start [this] this)
-    (stop [this] this)
+(defrecord Component [config]
+  component/Lifecycle
+  (start [this] this)
+  (stop [this] this)
 
-    strategy/Strategy
-    (compute [strategy portfolio portfolio-updates market event])))
+  xicotrader.strategy/Strategy
+  (compute [this strategy portfolio tick-data]))
+
+(defn fake-strategy-loader [config system-map strategy-jar]
+  (->Component config))
 
 (deftest read-system-test
   (testing "Read system dependencies"
