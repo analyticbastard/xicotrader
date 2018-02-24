@@ -4,14 +4,14 @@
 [![Deps](https://versions.deps.co/analyticbastard/xicotrader/status.svg)](https://versions.deps.co/analyticbastard/xicotrader)
 [![codecov](https://codecov.io/gh/analyticbastard/xicotrader/branch/master/graph/badge.svg)](https://codecov.io/gh/analyticbastard/xicotrader)
 
-Automatically trade cryoptocurrency: a growing ex-academic example.
+Automatically trade cryptocurrency: a growing ex-academic example.
 
 ## Current state
 
 The software currently consists of a automatic trading client, and a simulator that mocks
 a data and order service.
 
-The system loads the strategy from an external JAR file using [pomegranate](), which
+The system loads the strategy from an external JAR file using [pomegranate](https://github.com/cemerick/pomegranate), which
 must implement a Clojure protocol (Java interface) defined in this project. This
 protocol is the entry point to the strategy, which is fed with data as this trading
 client passes it on, along with the current portfolio state.
@@ -24,7 +24,7 @@ Upon each tick and current state, the strategy selects the best assets to cycle
 from USD, BTC and ETH.
 
 You need to build this project (see instructions within) and place the resulting
-JAR file in **TBD**, so that the project can load up the classes within the JAR.
+JAR file anywhere in the classpath **TBD**, so that the project can load up the classes within the JAR.
 
 ## Usage
 
@@ -81,15 +81,39 @@ component that implements connectivity with the simulator.
 ### Testing
 
 ```bash
-lein with-profile +dev,+client test
+lein with-profile dev,client test
 ```
 
 ### Code coverage
 
 ```bash
-CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein with-profile +dev,+client cloverage --codecov
+CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein with-profile dev,client cloverage --codecov
 ```
 
+## Architecture
+
+The software uses Stuart Sierra's [component](https://github.com/stuartsierra/component) library
+and each component feeds data into the system and receives actions from the inner components that
+are processed and passed on outwards. This component communication is done with
+[core async](https://github.com/clojure/core.async).
+
+### TODO
+
+Immediate roadmap:
+
+- I/O schema for the ticker and trades service and for the strategy
+- Loading system for independent ticker and trades service like the one for strategies and 
+separate the code for the simulator service into an independent project generating its own JAR
+- Carry over these changes to the arbitrage example strategy
+- Improve code coverage
+- Increase number of log messages
+- Build strategy and data feed service JARs and use them in tests 
+
+Future roadmap:
+
+- Binance ticker and trades service (as a separate JAR)
+- Dockerization
+- Clojurescript interface
 
 ## License
 
