@@ -10,13 +10,6 @@
 (defprotocol Strategy
   (compute [this strategy portfolio tick-data]))
 
-(defn evaluate [{:keys [ch-in ch-out]}
-                portfolio
-                {:keys [portfolio-updates] :as event}]
-  (>!! ch-in (assoc event :portfolio portfolio))
-  (let [[msg ch] (alts!! [ch-out (a/timeout 100)])]
-    (if (= ch ch-out) msg {})))
-
 (defn safe-compute [strategy portfolio tick-data]
   (try
     (s/validate Portfolio portfolio)
@@ -25,24 +18,24 @@
     (catch Throwable t
       (log/error (.getMessage t)))))
 
-(defn- strategy-loop [strategy ch-in ch-out]
+(defn- strategy-loop [strategy ch-from c-to]
   (go-loop []
-    (when-let [{:keys [portfolio tick-data]} (<! ch-in)]
+    (when-let [{:keys [portfolio tick-data]} (<! ch-from)]
       (let [action (safe-compute strategy portfolio tick-data)]
-        (when action (>! ch-out action))
+        (when action (>! c-to action))
         (recur)))))
 
 (defrecord Component [config]
   component/Lifecycle
   (start [this]
-    (let [ch-in (a/chan)
-          ch-out (a/chan)]
-      (strategy-loop (:strategy this) ch-in ch-out)
-      (assoc this :ch-in ch-in
-                  :ch-out ch-out)))
+    (let [c-from (a/chan)
+          c-to (a/chan)]
+      (strategy-loop (:strategy this) c-from c-to)
+      (assoc this :c-from c-from
+                  :c-to c-to)))
   (stop [this]
-    (a/close! (:ch-in this))
-    (a/close! (:ch-out this))
+    (a/close! (:c-from this))
+    (a/close! (:c-to this))
     this))
 
 (defn new [config]

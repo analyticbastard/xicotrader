@@ -106,14 +106,14 @@ are processed and passed on outwards. This component communication is done with
 The system is very simple and consists of only a small number of components
 
 ```
-+------------+           +------------+c-in  s-out+------------+
++------------+           +------------+c-from s-to+------------+
 |            |           |            <-----------+            |
 |            |  compute  |            |           |            |
 |  Strategy  +-----------+  Strategy  |           | Controller |
 |  impl      |           |  holder    |           |            |
-|            |           |            |       s-in|            |
+|            |           |            |     s-from|            |
 |            |           |            +----------->            |
-+------------+           +------------+c-out      +--+------^--+
++------------+           +------------+c-to       +--+------^--+
                                                  send|      |rec
                                                      |      |
                                                      |      |
