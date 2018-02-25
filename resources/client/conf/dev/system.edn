@@ -1,5 +1,7 @@
-{:engine    {:events   :events
-             :strategy :strategy}
- :strategy  {:strategy "arbitrage.jar"}
- :events    {:service :simulator}
- :simulator {}}
+{:controller {:receiver  :receiver
+              :sender    :sender
+              :strategy  :strategy}
+ :strategy   {:strategy "arbitrage.jar"}
+ :receiver   {}
+ :sender     {:service :simulator}
+ :simulator  {}}

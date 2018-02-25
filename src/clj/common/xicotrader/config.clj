@@ -22,7 +22,7 @@
               (println (.getMessage e)))))
         {})))
 
-(defn get-config [{:keys [profile]} module]
+(defn   get-config [{:keys [profile]} module]
   (or (load-props (format "conf/%s/%s.edn" (name profile) (name module)))
       {}))
 

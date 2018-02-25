@@ -2,8 +2,8 @@
   (:require
     [com.stuartsierra.component :as component]
     [xicotrader
-     [engine :as engine]
-     [events :as events]
+     [controller :as controller]
+     [receiver :as recv]
      [strategy :as strategy]]
     [xicotrader.loader :as loader]
     [xicotrader.config :as config]
@@ -22,13 +22,13 @@
   (let [system-map (config/system-deps config)
         strategy-jar (get-in system-map [:strategy :strategy])
         strategy-component (loader/load-strategy config system-map strategy-jar)
-        service-key (get-in system-map [:events :service])
+        service-key (get-in system-map [:receiver :service])
         service-component (loader/load-service config system-map service-key)]
     (if (and strategy-jar strategy-component
              service-key service-component)
       (component/system-map
-        :engine (engine/new engine)
-        :events (events/new events)
+        :controller (controller/new engine)
+        :receiver (recv/new events)
         :strategy (strategy/new strategy)
         service-key service-component
         strategy-jar strategy-component)
