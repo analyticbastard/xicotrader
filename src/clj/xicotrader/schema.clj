@@ -47,7 +47,7 @@
 (defschema Tick
   (-> (merge
         Time
-        Coin
+        Pair
         (m/map-keys optional-key OHCL)
         (m/map-keys optional-key Last)
         (m/map-keys optional-key Volume)
@@ -55,12 +55,12 @@
         (m/map-keys optional-key Supply))
       (s/constrained constrain-ticker-either-ohcl-or-last)))
 
-(defschema Holdings
-  (merge Coin
-         {:holdings Pos}))
+(defschema Position
+  {:amount Pos
+   :side (s/enum :long :short)})
 
 (defschema Portfolio
-  {:portfolio [Holdings]})
+  {Coin Position})
 
 (defschema Operation
   {:operation (s/enum [:buy :sell :cancel])
@@ -72,22 +72,29 @@
 (defschema ValidUntil
   {:valid-until DateTime})
 
-(defschema Order
+(defschema Trade
   (merge
     Operation
     Pair
-    Amount
+    Amount))
+
+(defschema Order
+  (merge
+    Trade
     (m/map-keys optional-key Price)
     (m/map-keys optional-key ValidUntil)))
 
-(defschema OutputDataFeedService
+(defschema Action
+  Order)
+
+(defschema Fill
+  (merge
+    Trade
+    Price))
+
+(defschema Event
   (merge
     (m/map-keys optional-key Portfolio)
-    {(optional-key :ticker) Tick}
-    {(optional-key :orders) [Order]}))
-
-(defschema InputStrategyService
-  OutputDataFeedService)
-
-(defschema OutputStrategyService
-  Order)
+    {(optional-key :ticks) [Tick]}
+    {(optional-key :orders) [Order]}
+    {(optional-key :fills) [Fill]}))

@@ -2,7 +2,10 @@
   (:require
     [clojure.core.async :as a :refer [go-loop >! <! >!! alts!!]]
     [com.stuartsierra.component :as component]
-    [xicotrader.service :as service]))
+    [schema.core :as s]
+    [xicotrader
+     [service :as service]
+     [schema :refer [Event]]]))
 
 (defprotocol Receiver
   (receive [this data]))
@@ -19,7 +22,7 @@
 
   Receiver
   (receive [{:keys [c-in] :as this} data]
-    ;; todo - validate data coming in
+    (s/validate Event data)
     (>! c-in data)))
 
 (defn new [config]
