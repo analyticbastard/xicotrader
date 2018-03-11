@@ -81,19 +81,19 @@ component that implements connectivity with the simulator.
 ### Building
 
 ```bash
-lein with-profile +client uberjar
+lein uberjar
 ```
 
 ### Testing
 
 ```bash
-lein with-profile dev,client test
+lein test
 ```
 
 ### Code coverage
 
 ```bash
-CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein with-profile dev,client cloverage --codecov
+CLOVERAGE_VERSION=1.0.7-SNAPSHOT lein cloverage --codecov
 ```
 
 ## Architecture
@@ -163,7 +163,7 @@ interface methods.
 
 Immediate roadmap:
 
-- I/O schema for the ticker and trades service and for the strategy
+- ~~I/O schema for the ticker and trades service and for the strategy~~
 - Loading system for independent ticker and trades service like the one for strategies and 
 separate the code for the simulator service into an independent project generating its own JAR
 - Carry over these changes to the arbitrage example strategy
