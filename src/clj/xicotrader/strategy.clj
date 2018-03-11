@@ -4,24 +4,24 @@
     [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [schema.core :as s]
-    [xicotrader.schema :refer :all])
+    [xicotrader
+     [schema :refer [Event Action]]])
   (:gen-class))
 
 (defprotocol Strategy
-  (compute [this strategy portfolio tick-data]))
+  (compute [this event]))
 
-(defn safe-compute [strategy portfolio tick-data]
+(defn safe-compute [strategy event]
   (try
-    (s/validate Portfolio portfolio)
-    (s/validate Tick tick-data)
-    (s/validate Order (.compute strategy portfolio tick-data))
+    (s/validate Event event)
+    (s/validate Action (.compute strategy event))
     (catch Throwable t
       (log/error (.getMessage t)))))
 
 (defn- strategy-loop [strategy ch-from c-to]
   (go-loop []
-    (when-let [{:keys [portfolio tick-data]} (<! ch-from)]
-      (let [action (safe-compute strategy portfolio tick-data)]
+    (when-let [event (<! ch-from)]
+      (let [action (safe-compute strategy event)]
         (when action (>! c-to action))
         (recur)))))
 

@@ -11,7 +11,7 @@
   (stop [this] this)
 
   xicotrader.strategy/Strategy
-  (compute [this strategy portfolio tick-data]))
+  (compute [this event]))
 
 (defn fake-strategy-loader [config system-map strategy-jar]
   (->Component config))

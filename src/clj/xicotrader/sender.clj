@@ -2,14 +2,18 @@
   (:require
     [clojure.core.async :as a :refer [go-loop >! <! >!! alts!!]]
     [com.stuartsierra.component :as component]
-    [xicotrader.service :as service]))
+    [schema.core :as s]
+    [xicotrader
+     [service :as service]
+     [schema :refer [Action]]]))
 
-(defprotocol Sender
+(defprotocol Connector
   (trade [this data]))
 
 (defn- send-loop [{:keys [c-out]} sender]
   (go-loop []
     (when-let [action (<! c-out)]
+      (s/validate Action action)
       (.trade sender action)
       (recur))))
 

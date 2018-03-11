@@ -1,5 +1,5 @@
-(ns xicotrader.service.simulator-service
-  (:require
+(ns xicotrader.service.core
+    (:require
     [clojure.set :as set]
     [clojure.edn :as edn]
     [clojure.tools.logging :as log]

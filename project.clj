@@ -10,25 +10,15 @@
                  [medley "1.0.0"]
                  [prismatic/schema "1.0.4"]
                  [com.stuartsierra/component "0.3.0"]
-                 [cheshire "5.7.1"]
-                 [clj-http "3.6.1"]
                  [com.cemerick/pomegranate "0.3.1"]]
-  :source-paths ["src/clj/common"]
-  :test-paths ["test/clj/common"]
-  :resource-paths ["resources/common"]
+  :source-paths ["src/clj"]
+  :test-paths ["test/clj"]
+  :resource-paths ["resources/common" "resources/client"]
   :target-path "target/%s"
   :plugins [[lein-cloverage "1.0.7-SNAPSHOT"]]
+  :aot [clojure.tools.logging.impl com.stuartsierra.component
+        xicotrader.strategy xicotrader.schema]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10" :exclusions [org.clojure/clojure]]
                                   [org.clojure/tools.nrepl "0.2.12" :exclusions [org.clojure/clojure]]]
                    :source-paths ["dev"]}
-             :client {:source-paths ["src/clj/client" "src/clj/common"]
-                      :resource-paths ["resources/client"]}
-             :simulator {:source-paths ["src/clj/simulator" "src/clj/common"]
-                         :resource-paths ["resources/simulator" "resources/marketdata"]
-                         :dependencies [;; Web stuff
-                                        [metosin/compojure-api "1.1.6" :exclusions [org.clojure/clojure]]
-                                        [juxt.modular/ring "0.5.3" :exclusions [org.clojure/clojure]]
-                                        [juxt.modular/http-kit "0.5.4" :exclusions [org.clojure/clojure]]
-                                        [metosin/ring-http-response "0.6.5" :exclusions [ring/ring-core]]
-                                        [ring/ring-json "0.4.0" :exclusions [org.clojure/clojure]]]}
              :uberjar {:aot :all}})
